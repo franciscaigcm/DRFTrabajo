@@ -2,7 +2,7 @@ from datetime import date, timedelta
 import calendar
 
 class UFCalculator:
-    def _init_(self, last_uf_known_date: date, last_uf_value: float, new_ipc: float):
+    def __init__(self, last_uf_known_date: date, last_uf_value: float, new_ipc: float):
         if last_uf_known_date.day != 9:
             raise ValueError("La fecha de la última UF conocida debe ser el día 9 del mes.")
         self.last_uf_known_date = last_uf_known_date

@@ -1,5 +1,3 @@
 from setuptools import setup
-
-# La llamada a setup() usará la configuración de setup.cfg
-setup()
-
+if __name__ == '__main__':
+    setup()
