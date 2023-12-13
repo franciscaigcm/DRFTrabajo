@@ -16,6 +16,6 @@ def get_ufs(last_uf_known_date: date, last_uf_value: float, new_ipc: float) -> d
 # Ejemplo de uso
 last_uf_date = date(2023, 1, 1)
 last_uf_value = 30000
-new_ipc = 0.02  # Asegúrate de que esto es un porcentaje decimal (2% como 0.02)
+new_ipc = 0.02  
 
 ufs_calculated = get_ufs(last_uf_date, last_uf_value, new_ipc)
