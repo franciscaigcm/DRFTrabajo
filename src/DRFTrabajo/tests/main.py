@@ -6,9 +6,9 @@ from DRFTrabajo.funcs.uf import get_ufs
 from datetime import date
 
 def main():
-    last_uf_known_date = date(2023, 1, 9)  # Must be day 9
-    last_uf_value = 28000.0
-    new_ipc = 0.5  # IPC variation as a percentage
+    last_uf_known_date = date(2023, 12, 9)  # Must be day 9
+    last_uf_value =  36607.69
+    new_ipc = 0.7  # IPC variation as a percentage
 
     # Call the get_ufs function and print its return value
     ufs = get_ufs(last_uf_known_date, last_uf_value, new_ipc)
