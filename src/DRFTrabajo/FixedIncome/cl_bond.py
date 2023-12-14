@@ -1,23 +1,39 @@
 import numpy as np
-from scipy.optimize import newton
-from datetime import date
+from scipy.optimize import newton, minimize
+from datetime import date, timedelta
 from .fixed_coupon import FixedCoupon
 
 class CLBond:
     def __init__(self, coupons, tera=None):
-        self.coupons = coupons  # List of FixedCoupon instances
-        self.tera = tera if tera is not None else self.set_tera()
+        self.coupons = coupons  # Lista de instancias FixedCoupon
+        if tera is None:
+            self.set_tera()  # Si tera no se proporciona, calcula la tera automáticamente
+        else:
+            self.tera = tera  # Si se proporciona tera, úsala directamente
 
-    def set_tera(self):
-        # Define una función objetivo para calcular la TERA
+    def set_tera(self, tol=1e-6, max_iter=1000):
+        tera_guess = 0.0
+
+        for _ in range(max_iter):
+            previous_tera = tera_guess
+            tera_guess = self.adjust_tera(tera_guess)
+
+            if abs(tera_guess - previous_tera) < tol:
+                self.tera = tera_guess
+                return
+
+        raise RuntimeError("Failed to converge within the specified number of iterations.")
+
+    def adjust_tera(self, current_tera):
         def objective(tera):
             return sum(coupon.residual / (1 + tera/100) ** ((coupon.payment_date - self.coupons[0].payment_date).days / 365) for coupon in self.coupons) - 100
-        
-        # Usa el método de Newton para encontrar la TERA que hace que la función objetivo sea 0
-        self.tera = newton(objective, x0=0.25, tol=1e-10, maxiter=1000)
-        self.tera = self.tera if self.tera is not None else 0.0
-        return self.tera
-    
+
+        result = minimize(objective, x0=current_tera, tol=1e-10)
+        if result.success:
+            return result.x[0]
+        else:
+            raise RuntimeError(f"Failed to converge. Message: {result.message}")
+
     def get_value(self, notional: float, rate: float, valuation_date: date) -> float:
         if self.tera is None:
             self.set_tera()  # Make sure tera is calculated
