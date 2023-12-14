@@ -22,13 +22,21 @@ if __name__ == "__main__":
 from DRFTrabajo.FixedIncome import CLBond, FixedCoupon
 
 # Crear instancias y utilizar los métodos
-coupon = FixedCoupon(amortization=10, interest=5, residual=90)
+from datetime import date, timedelta
+
+# Example usage in main.py
+payment_date = date.today() + timedelta(days=30)  # This is just an example, adjust accordingly
+coupon = FixedCoupon(amortization=10, interest=5, residual=90, payment_date=payment_date)
 bond = CLBond(coupons=[coupon])
 
 # Ejemplo de uso de los métodos
 notional = 1000000  # Ejemplo de valor nominal
 rate = 0.05  # Ejemplo de tasa de interés
 today = date.today()  # Fecha de hoy
+
+# If TERA wasn't provided during initialization, calculate it
+if bond.tera is None:
+    bond.set_tera()
 
 value = bond.get_value(notional, rate, today)
 tera = bond.set_tera()
