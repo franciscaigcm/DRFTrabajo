@@ -17,3 +17,23 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+from DRFTrabajo.FixedIncome import CLBond, FixedCoupon
+
+# Crear instancias y utilizar los métodos
+coupon = FixedCoupon(amortization=10, interest=5, residual=90)
+bond = CLBond(coupons=[coupon])
+
+# Ejemplo de uso de los métodos
+notional = 1000000  # Ejemplo de valor nominal
+rate = 0.05  # Ejemplo de tasa de interés
+today = date.today()  # Fecha de hoy
+
+value = bond.get_value(notional, rate, today)
+tera = bond.set_tera()
+dv01 = bond.get_dv01(notional)
+
+print(f"Valor del bono: {value}")
+print(f"TERA del bono: {tera}")
+print(f"DV01 del bono: {dv01}")
