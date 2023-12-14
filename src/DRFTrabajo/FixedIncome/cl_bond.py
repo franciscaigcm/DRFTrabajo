@@ -25,8 +25,6 @@ class CLBond:
         return amount_to_pay
 
     def get_dv01(self, notional: float) -> float:
-        # Calcula el DV01 (el cambio en el precio del bono por un cambio de 1 punto básico en la TIR)
-        # Esto es una simplificación y deberías implementar la lógica correcta
         original_value = self.get_value(notional, self.tera, date.today())
         new_value = self.get_value(notional, self.tera + 0.01, date.today())
         return (new_value - original_value) * 10000  # Convertir de porcentaje a puntos básicos
