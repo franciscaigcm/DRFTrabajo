@@ -21,7 +21,6 @@ class CLBond:
             if abs(tera_guess - previous_tera) < tol:
                 self.tera = tera_guess
                 return
-
         raise RuntimeError("Failed to converge within the specified number of iterations.")
 
     def adjust_tera(self, current_tera):
