@@ -1,10 +1,11 @@
 # main.py
 import sys
-sys.path.append('src')  # Ensure the src directory is in the Python path
+from datetime import date, timedelta
 
+sys.path.append('src')
 
 from DRFTrabajo.funcs.uf import get_ufs
-from datetime import date
+from DRFTrabajo.FixedIncome import CLBond, FixedCoupon
 
 def main():
     last_uf_known_date = date(2023, 12, 9)  # Debe ser el día 9
@@ -16,33 +17,37 @@ def main():
     for date_key, uf_value in ufs.items():
         print(f"{date_key}: {uf_value}")
 
+    # Definiciones para FixedCoupon y CLBond
+    start_date = date.today()  # o la fecha real de inicio del cupón
+    residual = 100  # valor residual
+    interest = 5  # interés
+    amortization = 10  # amortización
+
+    # Crear instancias y utilizar los métodos
+    payment_date = date.today() + timedelta(days=30)  
+    coupon = FixedCoupon(payment_date=payment_date, start_date=start_date, residual=residual, interest=interest, amortization=amortization)
+    
+    bond = CLBond(coupons=[coupon])
+
+    if bond.tera is None:
+        bond.set_tera()
+
+    notional = 1000000  # Valor nominal
+    today = date.today()
+
+    value = bond.get_value(notional, bond.tera, today)
+    tera = bond.tera
+
+    # Calcula la duración del bono
+    duration = bond.get_duration(bond.tera, today)
+    
+    # Calcula el DV01 del bono usando la duración
+    dv01 = bond.get_dv01(notional, bond.tera, today)
+
+    print(f"Valor del bono: {value}")
+    print(f"TERA del bono: {tera}")
+    print(f"DV01 del bono: {dv01}")
+    print(f"Duración del bono: {duration}")
+
 if __name__ == "__main__":
     main()
-
-from DRFTrabajo.FixedIncome import CLBond, FixedCoupon
-
-# Crear instancias y utilizar los métodos
-from datetime import date, timedelta
-
-# Ejemplo de uso en main.py
-payment_date = date.today() + timedelta(days=30)  # Este es solo un ejemplo, ajústalo según sea necesario
-coupon = FixedCoupon(amortization=10, interest=5, residual=90, payment_date=payment_date)
-# Se puede proporcionar la tera como argumento si se conoce
-bond = CLBond(coupons=[coupon], tera=0.05)
-
-# O permitir que se calcule automáticamente
-# Si bond.tera es None, se calculará automáticamente al llamar a bond.set_tera()
-if bond.tera is None:
-    bond.set_tera()
-
-notional = 1000000
-rate = 0.08
-today = date.today()
-
-value = bond.get_value(notional, rate, today)
-tera = bond.tera  # Ahora simplemente accede a bond.tera
-dv01 = bond.get_dv01(notional)
-
-print(f"Valor del bono: {value}")
-print(f"TERA del bono: {tera}")
-print(f"DV01 del bono: {dv01}")
