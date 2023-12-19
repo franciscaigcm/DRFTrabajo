@@ -21,7 +21,9 @@ class CLBond:
 
     def adjust_tera(self, current_tera):
         def objective(tera):
-            total_cash_flow = sum((coupon.amortization + coupon.interest) / (1 + tera/100) ** ((coupon.payment_date - self.coupons[0].start_date).days / 365) for coupon in self.coupons)
+            # Asegúrate de que self.coupons[0].start_date es la fecha de emisión del bono
+            issue_date = self.coupons[0].start_date
+            total_cash_flow = sum((coupon.amortization + coupon.interest) / (1 + tera/100) ** ((coupon.payment_date - issue_date).days / 365) for coupon in self.coupons)
             return total_cash_flow - 100
 
         result = minimize(objective, x0=current_tera, tol=1e-10)
@@ -43,7 +45,7 @@ class CLBond:
 
         # Calcular el precio y el monto a pagar
         precio = round(100 * total_cash_flow / value_par, 4)
-        amount_to_pay = notional * precio / 100  # Notional is the number of units
+        amount_to_pay = notional * precio / 100
 
         return amount_to_pay
     
