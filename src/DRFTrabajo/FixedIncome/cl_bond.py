@@ -1,39 +1,43 @@
 import numpy as np
 from scipy.optimize import minimize
 from datetime import date
+from scipy.optimize import newton
+
+
 
 class CLBond:
     def __init__(self, coupons, tera=None):
-        self.coupons = coupons  # Lista de instancias FixedCoupon
+        self.coupons = coupons 
         self.tera = tera if tera is not None else self.set_tera()
-
-    def set_tera(self, tol=1e-6, max_iter=1000):
-        tera_guess = 0.5
-
-        for _ in range(max_iter):
-            previous_tera = tera_guess
-            tera_guess = self.adjust_tera(tera_guess)
-
-            if abs(tera_guess - previous_tera) < tol:
-                self.tera = tera_guess
-                return
-        raise RuntimeError("Failed to converge within the specified number of iterations.")
-
-    def adjust_tera(self, current_tera):
-        def objective(tera):
-            issue_date = self.coupons[0].start_date
-            total_cash_flow = sum((coupon.amortization + coupon.interest) / (1 + tera/100) ** ((coupon.payment_date - issue_date).days / 365) for coupon in self.coupons)
-            return total_cash_flow - 100
-
-        result = minimize(objective, x0=current_tera, tol=1e-10)
-        if result.success:
-            return result.x[0]
+    
+    def set_tera(self, tol=1e-10, max_iter=10000):
+        
+        tera = self.set_tera_newton(tol=tol, max_iter=max_iter)
+        if tera is not None:
+            self.tera = tera
         else:
-            raise RuntimeError(f"Failed to converge. Message: {result.message}")
+            raise ValueError("Failed to compute TERA")
+    
+    def set_tera_newton(self, tol=1e-10, max_iter=10000):
+        def objective(tera):
+            
+            if tera <= -0.99:
+                return float('inf')
+
+            # Calcula el valor presente de los flujos de efectivo descontados a la TERA
+            present_value = sum(coupon.cash_flow() / (1 + tera/100) ** ((coupon.payment_date - self.coupons[0].start_date).days / 365) for coupon in self.coupons)
+            
+            # La función debe ser igual a cero, así que restamos 100 para encontrar la TERA
+            return present_value - 100
+
+        # Usa el método de Newton-Raphson para encontrar la raíz de la función objetivo
+        tera_guess = newton(func=objective, x0=0.5, tol=tol, maxiter=max_iter)
+        return tera_guess    
     
     def get_value(self, notional: float, rate: float, valuation_date: date) -> float:
         if self.tera is None:
-            self.set_tera()
+            print("Error: TERA no calculada. No se puede calcular el valor.")
+            return None
 
         # Calcula el total de flujos de efectivo descontando el flujo total (amortización + interés)
         total_cash_flow = sum((coupon.amortization + coupon.interest) / (1 + rate/100) ** ((coupon.payment_date - valuation_date).days / 365) for coupon in self.coupons)
